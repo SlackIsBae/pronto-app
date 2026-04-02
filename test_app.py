@@ -79,6 +79,28 @@ class TestPaymentAPI:
         # Check that error message mentions amount validation
         error_msg = data['error'].lower()
         assert 'amount' in error_msg or 'negative' in error_msg or 'invalid' in error_msg or 'greater' in error_msg
+
+    def test_zero_payment_rejected(self, client):
+        """Test that zero-value payments are properly rejected"""
+        payment_data = {
+            'cardNumber': '4532148803436467',
+            'cardName': 'TEST USER',
+            'expiryDate': '12/25',
+            'cvv': '123',
+            'amount': 0,
+            'currency': 'USD'
+        }
+
+        response = client.post('/api/payment',
+                              data=json.dumps(payment_data),
+                              content_type='application/json')
+
+        data = json.loads(response.data)
+
+        assert response.status_code == 400
+        assert data['success'] is False
+        assert 'error' in data
+        assert 'greater than zero' in data['error'].lower()
     
     def test_missing_fields(self, client):
         """Test that missing required fields return error"""
