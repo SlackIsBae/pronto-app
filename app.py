@@ -39,9 +39,7 @@ def serve_static(filename):
 def process_payment():
     """Process a fake payment"""
     try:
-        data = request.get_json(silent=True)
-        if not isinstance(data, dict):
-            return jsonify({'success': False, 'error': 'Invalid JSON payload.'}), 400
+        data = request.json
         
         # Validate required fields
         required_fields = ['cardNumber', 'cardName', 'expiryDate', 'cvv', 'amount']
@@ -49,14 +47,7 @@ def process_payment():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        try:
-            amount = float(data['amount'])
-        except (TypeError, ValueError):
-            return jsonify({'success': False, 'error': 'Amount must be a valid number.'}), 400
-
-        if not math.isfinite(amount):
-            return jsonify({'success': False, 'error': 'Amount must be a finite number.'}), 400
-
+        amount = float(data['amount'])
         if amount <= 0:
             return jsonify({'success': False, 'error': 'Amount must be greater than zero.'}), 400
         
