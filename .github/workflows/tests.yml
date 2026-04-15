@@ -44,7 +44,6 @@ jobs:
       
       - name: Run tests with pytest
         id: tests
-        continue-on-error: true
         run: |
           pytest test_app.py -v --cov=app --cov-report=term-missing
       
@@ -76,6 +75,9 @@ jobs:
           webhook-type: incoming-webhook
           payload: |
             {
+              "text": "GitHub Action Result: ${{ steps.status.outputs.status }} for ${{ github.repository }} on ${{ github.ref_name }}",
+              "username": "GitHub Actions",
+              "icon_emoji": ":github:",
               "attachments": [
                 {
                   "color": "${{ steps.status.outputs.color }}",
