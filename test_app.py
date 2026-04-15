@@ -100,6 +100,58 @@ class TestPaymentAPI:
         assert response.status_code == 400
         assert data['success'] is False
         assert 'amount must be greater than zero' in data['error'].lower()
+
+    def test_non_numeric_payment_rejected(self, client):
+        """Test that non-numeric amount values are rejected"""
+        payment_data = {
+            'cardNumber': '4532148803436467',
+            'cardName': 'TEST USER',
+            'expiryDate': '12/25',
+            'cvv': '123',
+            'amount': 'abc',
+            'currency': 'USD'
+        }
+
+        response = client.post('/api/payment',
+                              data=json.dumps(payment_data),
+                              content_type='application/json')
+        data = json.loads(response.data)
+
+        assert response.status_code == 400
+        assert data['success'] is False
+        assert 'valid number' in data['error'].lower()
+
+    def test_non_finite_payment_rejected(self, client):
+        """Test that NaN/Infinity amount values are rejected"""
+        for invalid_amount in ['NaN', 'Infinity', '-Infinity']:
+            payment_data = {
+                'cardNumber': '4532148803436467',
+                'cardName': 'TEST USER',
+                'expiryDate': '12/25',
+                'cvv': '123',
+                'amount': invalid_amount,
+                'currency': 'USD'
+            }
+
+            response = client.post('/api/payment',
+                                  data=json.dumps(payment_data),
+                                  content_type='application/json')
+            data = json.loads(response.data)
+
+            assert response.status_code == 400
+            assert data['success'] is False
+            assert 'finite number' in data['error'].lower()
+
+    def test_invalid_json_payload_rejected(self, client):
+        """Test that invalid JSON payloads return a 400"""
+        response = client.post('/api/payment',
+                              data='not-json',
+                              content_type='application/json')
+        data = json.loads(response.data)
+
+        assert response.status_code == 400
+        assert data['success'] is False
+        assert 'invalid json payload' in data['error'].lower()
     
     def test_missing_fields(self, client):
         """Test that missing required fields return error"""
