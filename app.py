@@ -47,10 +47,8 @@ def process_payment():
             if field not in data:
                 return jsonify({'success': False, 'error': f'Missing field: {field}'}), 400
         
-        validate_positive = True
-        
         amount = float(data['amount'])
-        if validate_positive and amount <= 0:
+        if amount <= 0:
             return jsonify({'success': False, 'error': 'Amount must be greater than zero.'}), 400
         
         # Simulate payment processing delay
